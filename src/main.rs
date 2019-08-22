@@ -22,7 +22,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
                     x.chars()
                         .next()
                         .clone()
-                        .map(|first| ((first, x.chars().count().min(8)), x))
+                        .map(|first| ((first, x.chars().count().min(9)), x))
                 })
                 .fold(HashMap::new(), |mut dict, (k, v)| {
                     dict.entry(k).or_insert_with(Vec::new).push(v);
