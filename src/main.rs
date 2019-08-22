@@ -46,16 +46,22 @@ fn main() -> Result<(), Box<std::error::Error>> {
                 (Some(start), Some(len)) => {
                     let end = splited.next().and_then(|x| x.to_katakana().chars().next());
                     if let Some(res) = data.get(&(start, len)).cloned() {
-                        let mut res = res
-                            .into_iter()
-                            .filter(|x| {
-                                end.clone()
-                                    .map(|end| x.chars().last() == Some(end))
-                                    .unwrap_or(true)
-                            })
-                            .collect::<Vec<_>>();
-                        res.sort_by_key(|x| if showd.contains(x) { 1 } else { 0 });
-                        let mut res = res.into_iter().take(10).collect::<Vec<_>>();
+                        let mut res = res.into_iter().collect::<Vec<_>>();
+                        res.sort_by_key(|x| {
+                            let not_contains = !showd.contains(x);
+                            let is_end = end
+                                .clone()
+                                .map(|end| x.chars().last() == Some(end))
+                                .unwrap_or(true);
+                            if not_contains && is_end {
+                                0
+                            } else if not_contains {
+                                1
+                            } else {
+                                2
+                            }
+                        });
+                        let mut res = res.into_iter().take(3).collect::<Vec<_>>();
                         res.reverse();
                         for x in &res {
                             showd.insert(x.clone());
