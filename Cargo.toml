@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 bincode = "*"
+romaji = "0.1"

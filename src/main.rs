@@ -1,6 +1,8 @@
 use std::collections::{HashMap, HashSet};
 use std::env;
 
+use romaji::RomajiExt;
+
 use std::fs::File;
 use std::io::{stdin, BufRead, BufReader, BufWriter, Read, Write};
 
@@ -38,7 +40,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
             let mut splited = input.split(' ');
             match (
                 splited.next().and_then(|x| x.parse::<usize>().ok()),
-                splited.next().and_then(|x| x.chars().next()),
+                splited.next().and_then(|x| x.to_katakana().chars().next()),
             ) {
                 (Some(len), Some(c)) => {
                     if let Some(res) = data.get(&(c, len)).cloned().map(|x| x.join("\n")) {
