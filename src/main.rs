@@ -34,46 +34,61 @@ fn main() -> Result<(), Box<std::error::Error>> {
         BufReader::new(File::open("dict.bin")?).read_to_end(&mut buf)?;
         let data = bincode::deserialize::<DictType>(&buf)?;
         let mut showd = HashSet::new();
+        let mut default_end = None;
         loop {
             println!("input:");
             let mut input = String::new();
             stdin().read_line(&mut input)?;
             let input = input.trim_end_matches("\n");
-            let splited = input.split(' ').collect::<Vec<_>>();
-            match (
-                splited.get(0).and_then(|x| x.to_katakana().chars().next()),
-                splited.get(1).and_then(|x| x.parse::<usize>().ok()),
-            ) {
-                (Some(start), Some(len)) => {
-                    let end = splited.get(2).and_then(|x| x.to_katakana().chars().next());
-                    if let Some(res) = data.get(&(start, len)).cloned() {
-                        let mut res = res.into_iter().collect::<Vec<_>>();
-                        res.sort_by_key(|x| {
-                            let not_contains = !showd.contains(x);
-                            let is_end = end
-                                .clone()
-                                .map(|end| x.trim_end_matches("ー").chars().last() == Some(end))
-                                .unwrap_or(true);
-                            if not_contains && is_end {
-                                0
-                            } else if not_contains {
-                                1
-                            } else {
-                                2
-                            }
-                        });
-                        let mut res = res.into_iter().take(3).collect::<Vec<_>>();
-                        res.reverse();
-                        for x in &res {
-                            showd.insert(x.clone());
-                        }
-                        println!("{}", res.join("\n"));
-                    } else {
-                        println!("not fount");
-                    }
+            let splited = input.split(' ').map(|x| x.to_string()).collect::<Vec<_>>();
+            match splited.get(0).map(|x| x.as_ref()) {
+                Some(":e") => {
+                    default_end = splited.get(1).cloned();
                 }
+                Some(":r") => showd.clear(),
                 _ => {
-                    println!("input error");
+                    match (
+                        splited.get(0).and_then(|x| x.to_katakana().chars().next()),
+                        splited.get(1).and_then(|x| x.parse::<usize>().ok()),
+                    ) {
+                        (Some(start), Some(len)) => {
+                            let end = vec![splited.get(2), default_end.as_ref()]
+                                .into_iter()
+                                .filter_map(|x| x)
+                                .next()
+                                .and_then(|x| x.to_katakana().chars().next());
+                            if let Some(res) = data.get(&(start, len)).cloned() {
+                                let mut res = res.into_iter().collect::<Vec<_>>();
+                                res.sort_by_key(|x| {
+                                    let not_contains = !showd.contains(x);
+                                    let is_end = end
+                                        .clone()
+                                        .map(|end| {
+                                            x.trim_end_matches("ー").chars().last() == Some(end)
+                                        })
+                                        .unwrap_or(true);
+                                    if not_contains && is_end {
+                                        0
+                                    } else if not_contains {
+                                        1
+                                    } else {
+                                        2
+                                    }
+                                });
+                                let mut res = res.into_iter().take(3).collect::<Vec<_>>();
+                                res.reverse();
+                                for x in &res {
+                                    showd.insert(x.clone());
+                                }
+                                println!("{}", res.join("\n"));
+                            } else {
+                                println!("not fount");
+                            }
+                        }
+                        _ => {
+                            println!("input error");
+                        }
+                    }
                 }
             }
         }
