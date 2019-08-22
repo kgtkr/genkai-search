@@ -71,7 +71,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
                         println!("not fount");
                     }
                 }
-                x => {
+                _ => {
                     println!("input error");
                 }
             }
