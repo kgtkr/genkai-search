@@ -39,10 +39,10 @@ fn main() -> Result<(), Box<std::error::Error>> {
             stdin().read_line(&mut input)?;
             let mut splited = input.split(' ');
             match (
-                splited.next().and_then(|x| x.parse::<usize>().ok()),
                 splited.next().and_then(|x| x.to_katakana().chars().next()),
+                splited.next().and_then(|x| x.parse::<usize>().ok()),
             ) {
-                (Some(len), Some(start)) => {
+                (Some(start), Some(len)) => {
                     let end = splited.next().and_then(|x| x.to_katakana().chars().next());
                     if let Some(res) = data.get(&(start, len)).cloned() {
                         println!(
