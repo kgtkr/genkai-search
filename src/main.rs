@@ -51,7 +51,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
                             let not_contains = !showd.contains(x);
                             let is_end = end
                                 .clone()
-                                .map(|end| x.chars().last() == Some(end))
+                                .map(|end| x.trim_end_matches("ー").chars().last() == Some(end))
                                 .unwrap_or(true);
                             if not_contains && is_end {
                                 0
