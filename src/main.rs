@@ -43,8 +43,11 @@ fn main() -> Result<(), Box<std::error::Error>> {
                 splited.next().and_then(|x| x.to_katakana().chars().next()),
             ) {
                 (Some(len), Some(c)) => {
-                    if let Some(res) = data.get(&(c, len)).cloned().map(|x| x.join("\n")) {
-                        println!("{}", res);
+                    if let Some(res) = data.get(&(c, len)).cloned() {
+                        println!(
+                            "{}",
+                            res.into_iter().take(30).collect::<Vec<_>>().join("\n")
+                        );
                     } else {
                         println!("not fount");
                     }
