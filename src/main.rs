@@ -42,11 +42,20 @@ fn main() -> Result<(), Box<std::error::Error>> {
                 splited.next().and_then(|x| x.parse::<usize>().ok()),
                 splited.next().and_then(|x| x.to_katakana().chars().next()),
             ) {
-                (Some(len), Some(c)) => {
-                    if let Some(res) = data.get(&(c, len)).cloned() {
+                (Some(len), Some(start)) => {
+                    let end = splited.next().and_then(|x| x.to_katakana().chars().next());
+                    if let Some(res) = data.get(&(start, len)).cloned() {
                         println!(
                             "{}",
-                            res.into_iter().take(30).collect::<Vec<_>>().join("\n")
+                            res.into_iter()
+                                .filter(|x| {
+                                    end.clone()
+                                        .map(|end| x.chars().last() == Some(end))
+                                        .unwrap_or(true)
+                                })
+                                .take(30)
+                                .collect::<Vec<_>>()
+                                .join("\n")
                         );
                     } else {
                         println!("not fount");
