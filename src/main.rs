@@ -33,11 +33,12 @@ fn main() -> Result<(), Box<std::error::Error>> {
         let mut buf = Vec::new();
         BufReader::new(File::open("dict.bin")?).read_to_end(&mut buf)?;
         let data = bincode::deserialize::<DictType>(&buf)?;
+        let mut showd = HashSet::new();
         loop {
             println!("input:");
             let mut input = String::new();
             stdin().read_line(&mut input)?;
-            let mut splited = input.split(' ');
+            let mut splited = input.trim_end_matches("\n").split(' ');
             match (
                 splited.next().and_then(|x| x.to_katakana().chars().next()),
                 splited.next().and_then(|x| x.parse::<usize>().ok()),
@@ -45,23 +46,26 @@ fn main() -> Result<(), Box<std::error::Error>> {
                 (Some(start), Some(len)) => {
                     let end = splited.next().and_then(|x| x.to_katakana().chars().next());
                     if let Some(res) = data.get(&(start, len)).cloned() {
-                        println!(
-                            "{}",
-                            res.into_iter()
-                                .filter(|x| {
-                                    end.clone()
-                                        .map(|end| x.chars().last() == Some(end))
-                                        .unwrap_or(true)
-                                })
-                                .take(30)
-                                .collect::<Vec<_>>()
-                                .join("\n")
-                        );
+                        let mut res = res
+                            .into_iter()
+                            .filter(|x| {
+                                end.clone()
+                                    .map(|end| x.chars().last() == Some(end))
+                                    .unwrap_or(true)
+                            })
+                            .collect::<Vec<_>>();
+                        res.sort_by_key(|x| if showd.contains(x) { 1 } else { 0 });
+                        let mut res = res.into_iter().take(10).collect::<Vec<_>>();
+                        res.reverse();
+                        for x in &res {
+                            showd.insert(x.clone());
+                        }
+                        println!("{}", res.join("\n"));
                     } else {
                         println!("not fount");
                     }
                 }
-                _ => {
+                x => {
                     println!("input error");
                 }
             }
