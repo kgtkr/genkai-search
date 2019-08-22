@@ -38,13 +38,14 @@ fn main() -> Result<(), Box<std::error::Error>> {
             println!("input:");
             let mut input = String::new();
             stdin().read_line(&mut input)?;
-            let mut splited = input.trim_end_matches("\n").split(' ');
+            let input = input.trim_end_matches("\n");
+            let splited = input.split(' ').collect::<Vec<_>>();
             match (
-                splited.next().and_then(|x| x.to_katakana().chars().next()),
-                splited.next().and_then(|x| x.parse::<usize>().ok()),
+                splited.get(0).and_then(|x| x.to_katakana().chars().next()),
+                splited.get(1).and_then(|x| x.parse::<usize>().ok()),
             ) {
                 (Some(start), Some(len)) => {
-                    let end = splited.next().and_then(|x| x.to_katakana().chars().next());
+                    let end = splited.get(2).and_then(|x| x.to_katakana().chars().next());
                     if let Some(res) = data.get(&(start, len)).cloned() {
                         let mut res = res.into_iter().collect::<Vec<_>>();
                         res.sort_by_key(|x| {
