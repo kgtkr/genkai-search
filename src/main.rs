@@ -6,33 +6,48 @@ use romaji::RomajiExt;
 use std::fs::File;
 use std::io::{stdin, BufRead, BufReader, BufWriter, Read, Write};
 
+struct Dict(HashMap<(char, usize), Vec<String>>);
+
+impl Dict {
+    fn dump(&self) -> Result<Vec<u8>, Box<std::error::Error>> {
+        Ok(bincode::serialize(&self.0)?)
+    }
+
+    fn load(buf: &Vec<u8>) -> Result<Dict, Box<std::error::Error>> {
+        Ok(Dict(bincode::deserialize(buf)?))
+    }
+}
+
 type DictType = HashMap<(char, usize), Vec<String>>;
 
 fn main() -> Result<(), Box<std::error::Error>> {
     if env::args().nth(1) == Some("init".to_string()) {
-        BufWriter::new(File::create("dict.bin")?).write_all(&bincode::serialize(
-            &BufReader::new(File::open("dict.csv")?)
-                .lines()
-                .filter_map(|x| x.ok())
-                .filter_map(|x| x.split(',').nth(11).map(|x| x.to_string()))
-                .filter(|x| x.chars().last() != Some('ン'))
-                .collect::<HashSet<_>>()
-                .into_iter()
-                .filter_map(|x| {
-                    x.chars()
-                        .next()
-                        .clone()
-                        .map(|first| ((first, x.chars().count().min(9)), x))
-                })
-                .fold(HashMap::new(), |mut dict, (k, v)| {
-                    dict.entry(k).or_insert_with(Vec::new).push(v);
-                    dict
-                }),
-        )?)?;
+        BufWriter::new(File::create("dict.bin")?).write_all(
+            &Dict(
+                BufReader::new(File::open("dict.csv")?)
+                    .lines()
+                    .filter_map(|x| x.ok())
+                    .filter_map(|x| x.split(',').nth(11).map(|x| x.to_string()))
+                    .filter(|x| x.chars().last() != Some('ン'))
+                    .collect::<HashSet<_>>()
+                    .into_iter()
+                    .filter_map(|x| {
+                        x.chars()
+                            .next()
+                            .clone()
+                            .map(|first| ((first, x.chars().count().min(9)), x))
+                    })
+                    .fold(HashMap::new(), |mut dict, (k, v)| {
+                        dict.entry(k).or_insert_with(Vec::new).push(v);
+                        dict
+                    }),
+            )
+            .dump()?,
+        )?;
     } else {
         let mut buf = Vec::new();
         BufReader::new(File::open("dict.bin")?).read_to_end(&mut buf)?;
-        let data = bincode::deserialize::<DictType>(&buf)?;
+        let Dict(data) = Dict::load(&buf)?;
         let mut showd = HashSet::new();
         let mut default_end = None;
         loop {
