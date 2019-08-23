@@ -73,6 +73,26 @@ impl Dict {
     }
 }
 
+fn tokenlize_input(line: String) -> Vec<String> {
+    line.trim_end_matches("\n")
+        .split(' ')
+        .map(|x| x.to_string())
+        .collect::<Vec<_>>()
+}
+
+fn parse_input(line: String) -> (Option<String>, Vec<String>) {
+    let mut tokens = tokenlize_input(line);
+    let mut token_iters = tokens.into_iter();
+    if let Some(first) = token_iters.next() {
+        if first.chars().next() == Some(':') {
+            (Some(first.chars().skip(1).collect()), token_iters.collect())
+        } else {
+            (None, std::iter::once(first).chain(token_iters).collect())
+        }
+    } else {
+        (None, Vec::new())
+    }
+}
 
 fn main() -> Result<(), Box<std::error::Error>> {
     if env::args().nth(1) == Some("init".to_string()) {
@@ -94,20 +114,20 @@ fn main() -> Result<(), Box<std::error::Error>> {
             println!("input:");
             let mut input = String::new();
             stdin().read_line(&mut input)?;
-            let input = input.trim_end_matches("\n");
-            let splited = input.split(' ').map(|x| x.to_string()).collect::<Vec<_>>();
-            match splited.get(0).map(|x| x.as_ref()) {
-                Some(":e") => {
-                    default_end = splited.get(1).cloned();
+            let (cmd, params) = parse_input(input);
+            match cmd.as_ref().map(String::as_str) {
+                Some("e") => {
+                    default_end = params.get(0).cloned();
                 }
-                Some(":r") => showd.clear(),
-                _ => {
+                Some("r") => showd.clear(),
+                Some(x) => println!("not found command: ':{}'", x),
+                None => {
                     match (
-                        splited.get(0).and_then(|x| x.to_katakana().chars().next()),
-                        splited.get(1).and_then(|x| x.parse::<usize>().ok()),
+                        params.get(0).and_then(|x| x.to_katakana().chars().next()),
+                        params.get(1).and_then(|x| x.parse::<usize>().ok()),
                     ) {
                         (Some(start), Some(len)) => {
-                            let end = vec![splited.get(2), default_end.as_ref()]
+                            let end = vec![params.get(2), default_end.as_ref()]
                                 .into_iter()
                                 .filter_map(|x| x)
                                 .next()
