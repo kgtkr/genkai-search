@@ -121,7 +121,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
             stdin().read_line(&mut input)?;
             let (cmd, params) = parse_input(input);
             match cmd.as_ref().map(String::as_str) {
-                Some("e") => {
+                Some("d") => {
                     default_end = params.get(0).cloned();
                 }
                 Some("r") => showd.clear(),
