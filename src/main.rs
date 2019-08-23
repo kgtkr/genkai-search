@@ -55,6 +55,22 @@ impl Dict {
         });
         picked
     }
+
+    fn pick_and_sorted_and_limit(
+        &self,
+        len: usize,
+        start: char,
+        end: Option<char>,
+        showd: &mut HashSet<String>,
+        limit: usize,
+    ) -> Vec<String> {
+        let res = self.pick_and_sorted(len, start, end, showd);
+        let mut res = res.into_iter().take(limit).collect::<Vec<_>>();
+        for x in &res {
+            showd.insert(x.clone());
+        }
+        res
+    }
 }
 
 
@@ -71,7 +87,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
     } else {
         let mut buf = Vec::new();
         BufReader::new(File::open("dict.bin")?).read_to_end(&mut buf)?;
-        let (data) = Dict::load(&buf)?;
+        let data = Dict::load(&buf)?;
         let mut showd = HashSet::new();
         let mut default_end = None;
         loop {
@@ -96,13 +112,10 @@ fn main() -> Result<(), Box<std::error::Error>> {
                                 .filter_map(|x| x)
                                 .next()
                                 .and_then(|x| x.to_katakana().chars().next());
-                            let res = data.pick_and_sorted(len, start, end, &showd);
+                            let mut res =
+                                data.pick_and_sorted_and_limit(len, start, end, &mut showd, 3);
                             if res.len() != 0 {
-                                let mut res = res.into_iter().take(3).collect::<Vec<_>>();
                                 res.reverse();
-                                for x in &res {
-                                    showd.insert(x.clone());
-                                }
                                 println!("{}", res.join("\n"));
                             } else {
                                 println!("not fount");
