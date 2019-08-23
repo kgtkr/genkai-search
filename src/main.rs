@@ -9,6 +9,26 @@ use std::io::{stdin, BufRead, BufReader, BufWriter, Read, Write};
 struct Dict(HashMap<(char, usize), Vec<String>>);
 
 impl Dict {
+    fn from_csv(lines: impl std::iter::Iterator<Item = String>) -> Dict {
+        Dict(
+            lines
+                .filter_map(|x| x.split(',').nth(11).map(|x| x.to_string()))
+                .filter(|x| x.chars().last() != Some('ン'))
+                .collect::<HashSet<_>>()
+                .into_iter()
+                .filter_map(|x| {
+                    x.chars()
+                        .next()
+                        .clone()
+                        .map(|first| ((first, x.chars().count().min(9)), x))
+                })
+                .fold(HashMap::new(), |mut dict, (k, v)| {
+                    dict.entry(k).or_insert_with(Vec::new).push(v);
+                    dict
+                }),
+        )
+    }
+
     fn dump(&self) -> Result<Vec<u8>, Box<std::error::Error>> {
         Ok(bincode::serialize(&self.0)?)
     }
@@ -18,29 +38,14 @@ impl Dict {
     }
 }
 
-type DictType = HashMap<(char, usize), Vec<String>>;
 
 fn main() -> Result<(), Box<std::error::Error>> {
     if env::args().nth(1) == Some("init".to_string()) {
         BufWriter::new(File::create("dict.bin")?).write_all(
-            &Dict(
+            &Dict::from_csv(
                 BufReader::new(File::open("dict.csv")?)
                     .lines()
-                    .filter_map(|x| x.ok())
-                    .filter_map(|x| x.split(',').nth(11).map(|x| x.to_string()))
-                    .filter(|x| x.chars().last() != Some('ン'))
-                    .collect::<HashSet<_>>()
-                    .into_iter()
-                    .filter_map(|x| {
-                        x.chars()
-                            .next()
-                            .clone()
-                            .map(|first| ((first, x.chars().count().min(9)), x))
-                    })
-                    .fold(HashMap::new(), |mut dict, (k, v)| {
-                        dict.entry(k).or_insert_with(Vec::new).push(v);
-                        dict
-                    }),
+                    .filter_map(|x| x.ok()),
             )
             .dump()?,
         )?;
