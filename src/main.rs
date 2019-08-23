@@ -81,7 +81,7 @@ fn tokenlize_input(line: String) -> Vec<String> {
 }
 
 fn parse_input(line: String) -> (Option<String>, Vec<String>) {
-    let mut tokens = tokenlize_input(line);
+    let tokens = tokenlize_input(line);
     let mut token_iters = tokens.into_iter();
     if let Some(first) = token_iters.next() {
         if first.chars().next() == Some(':') {
