@@ -80,18 +80,23 @@ fn tokenlize_input(line: String) -> Vec<String> {
         .collect::<Vec<_>>()
 }
 
-fn parse_input(line: String) -> (Option<String>, Vec<String>) {
-    let tokens = tokenlize_input(line);
-    let mut token_iters = tokens.into_iter();
-    if let Some(first) = token_iters.next() {
-        if first.chars().next() == Some(':') {
-            (Some(first.chars().skip(1).collect()), token_iters.collect())
+fn satisfy<T>(items: Vec<T>, f: impl FnOnce(&T) -> bool) -> (Option<T>, Vec<T>) {
+    let mut iters = items.into_iter();
+    if let Some(first) = iters.next() {
+        if f(&first) {
+            (Some(first), iters.collect())
         } else {
-            (None, std::iter::once(first).chain(token_iters).collect())
+            (None, std::iter::once(first).chain(iters).collect())
         }
     } else {
-        (None, Vec::new())
+        (None, iters.collect())
     }
+}
+
+fn parse_input(line: String) -> (Option<String>, Vec<String>) {
+    let tokens = tokenlize_input(line);
+    let (cmd, params) = satisfy(tokens, |x| x.chars().next() == Some(':'));
+    (cmd.map(|x| x.chars().skip(1).collect()), params)
 }
 
 fn main() -> Result<(), Box<std::error::Error>> {
