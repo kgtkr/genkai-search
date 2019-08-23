@@ -36,6 +36,25 @@ impl Dict {
     fn load(buf: &Vec<u8>) -> Result<Dict, Box<std::error::Error>> {
         Ok(Dict(bincode::deserialize(buf)?))
     }
+
+    fn pick_and_sorted(
+        &self,
+        len: usize,
+        start: char,
+        end: Option<char>,
+        showd: &HashSet<String>,
+    ) -> Vec<String> {
+        let mut picked = self.0.get(&(start, len)).cloned().unwrap_or_else(Vec::new);
+        picked.sort_by_key(|x| {
+            (
+                showd.contains(x),
+                !end.clone()
+                    .map(|end| x.trim_end_matches("ー").chars().last() == Some(end))
+                    .unwrap_or(true),
+            )
+        });
+        picked
+    }
 }
 
 
@@ -52,7 +71,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
     } else {
         let mut buf = Vec::new();
         BufReader::new(File::open("dict.bin")?).read_to_end(&mut buf)?;
-        let Dict(data) = Dict::load(&buf)?;
+        let (data) = Dict::load(&buf)?;
         let mut showd = HashSet::new();
         let mut default_end = None;
         loop {
@@ -77,18 +96,8 @@ fn main() -> Result<(), Box<std::error::Error>> {
                                 .filter_map(|x| x)
                                 .next()
                                 .and_then(|x| x.to_katakana().chars().next());
-                            if let Some(res) = data.get(&(start, len)).cloned() {
-                                let mut res = res.into_iter().collect::<Vec<_>>();
-                                res.sort_by_key(|x| {
-                                    (
-                                        showd.contains(x),
-                                        !end.clone()
-                                            .map(|end| {
-                                                x.trim_end_matches("ー").chars().last() == Some(end)
-                                            })
-                                            .unwrap_or(true),
-                                    )
-                                });
+                            let res = data.pick_and_sorted(len, start, end, &showd);
+                            if res.len() != 0 {
                                 let mut res = res.into_iter().take(3).collect::<Vec<_>>();
                                 res.reverse();
                                 for x in &res {
