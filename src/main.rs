@@ -114,15 +114,17 @@ fn main() -> Result<(), Box<std::error::Error>> {
         BufReader::new(File::open("dict.bin")?).read_to_end(&mut buf)?;
         let data = Dict::load(&buf)?;
         let mut showd = HashSet::new();
-        let mut default_end = None;
+        let mut default_end = Vec::new();
+        let mut count = 0;
         loop {
+            count += 1;
             println!("input:");
             let mut input = String::new();
             stdin().read_line(&mut input)?;
             let (cmd, params) = parse_input(input);
             match cmd.as_ref().map(String::as_str) {
                 Some("d") => {
-                    default_end = params.get(0).cloned();
+                    default_end = params;
                 }
                 Some("r") => showd.clear(),
                 Some(x) => println!("not found command: ':{}'", x),
@@ -132,11 +134,20 @@ fn main() -> Result<(), Box<std::error::Error>> {
                         params.get(1).and_then(|x| x.parse::<usize>().ok()),
                     ) {
                         (Some(start), Some(len)) => {
-                            let end = vec![params.get(2), default_end.as_ref()]
-                                .into_iter()
-                                .filter_map(|x| x)
-                                .next()
-                                .and_then(|x| x.to_katakana().chars().next());
+                            let end = vec![
+                                params.get(2).cloned().into_iter().collect::<Vec<_>>(),
+                                default_end.clone(),
+                            ]
+                            .into_iter()
+                            .filter_map(|x| {
+                                if x.len() != 0 {
+                                    x.get(count % x.len()).cloned()
+                                } else {
+                                    None
+                                }
+                            })
+                            .next()
+                            .and_then(|x| x.to_katakana().chars().next());
                             let mut res =
                                 data.pick_and_sorted_and_limit(len, start, end, &mut showd, 3);
                             if res.len() != 0 {
