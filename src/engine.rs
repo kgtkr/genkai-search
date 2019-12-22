@@ -14,10 +14,18 @@ impl<'a> Engine<'a> {
         }
     }
 
+    /**
+     * 使用済みリストをリセットする
+     */
     pub fn reset(&mut self) {
         self.used.clear();
     }
 
+    /**
+     * 検索する。ソート済みの結果が返ってくる
+     * startで始まり、gtがtrueならlen以上、gtがfalseならlenの単語をフィルタリングする
+     * その後未使用のもの→endで終わるものの優先順位でソートする
+     */
     pub fn find(&self, start: char, end: Option<char>, len: usize, gt: bool) -> Vec<String> {
         let mut list = self
             .dict
