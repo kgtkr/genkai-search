@@ -10,4 +10,4 @@ pub use command_parser::parse_command;
 pub use dict::Dict;
 pub use engine::Engine;
 pub use keybord::string_to_keys;
-pub use keybord_input::input_string;
+pub use keybord_input::KeyboardManager;

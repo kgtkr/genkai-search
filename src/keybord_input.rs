@@ -1,17 +1,48 @@
 use super::keybord::{string_to_keys, Dire, InputButton};
-use std::process::Command;
+use std::io::Write;
+use std::process::{Child, Command, Stdio};
 
-fn swipe(list: &Vec<(i32, i32, i32, i32)>) {
-    Command::new("adb")
-        .arg("shell")
-        .arg(
-            list.iter()
-                .map(|(x1, y1, x2, y2)| format!("input swipe {} {} {} {}", x1, y1, x2, y2))
-                .collect::<Vec<_>>()
-                .join("&&"),
+pub struct KeyboardManager(Child);
+
+impl KeyboardManager {
+    pub fn start() -> KeyboardManager {
+        KeyboardManager(
+            Command::new("adb")
+                .arg("shell")
+                .stdout(Stdio::null())
+                .stdin(Stdio::piped())
+                .stderr(Stdio::null())
+                .spawn()
+                .unwrap(),
         )
-        .output()
-        .unwrap();
+    }
+
+    fn swipe(&mut self, list: &Vec<(i32, i32, i32, i32)>) {
+        let stdin = self.0.stdin.as_mut().unwrap();
+        stdin
+            .write(
+                format!(
+                    "{}\n",
+                    list.iter()
+                        .map(|(x1, y1, x2, y2)| format!("input swipe {} {} {} {}", x1, y1, x2, y2))
+                        .collect::<Vec<_>>()
+                        .join("&&")
+                )
+                .as_bytes(),
+            )
+            .unwrap();
+        stdin.flush().unwrap();
+    }
+
+    pub fn input_string(&mut self, s: &String) {
+        self.swipe(
+            &string_to_keys(s)
+                .unwrap()
+                .into_iter()
+                .map(|key| key_to_swipe(&key))
+                .collect::<Vec<_>>(),
+        );
+    }
 }
 
 const swipe_width: i32 = 120;
@@ -45,14 +76,4 @@ fn key_to_swipe((button, dire): &(InputButton, Dire)) -> (i32, i32, i32, i32) {
         Dire::D => (0, swipe_width),
     };
     (x1, y1, x1 + dx, y1 + dy)
-}
-
-pub fn input_string(s: &String) {
-    swipe(
-        &string_to_keys(s)
-            .unwrap()
-            .into_iter()
-            .map(|key| key_to_swipe(&key))
-            .collect::<Vec<_>>(),
-    );
 }
