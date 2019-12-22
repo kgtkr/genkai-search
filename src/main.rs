@@ -1,4 +1,4 @@
-use genkai_search::{parse_command, AnyError, Dict};
+use genkai_search::{parse_command, AnyError, Dict, Engine};
 
 use std::collections::HashSet;
 use std::env;
@@ -24,8 +24,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let mut buf = Vec::new();
     BufReader::new(File::open("dict.bin")?).read_to_end(&mut buf)?;
-    let data = Dict::load(&buf)?;
-    let mut showed = HashSet::new();
+    let dict = Dict::load(&buf)?;
+    let mut engine = Engine::new(&dict);
     let mut default_end = Vec::new();
     let mut count = 0;
     loop {
@@ -38,7 +38,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             Some("d") => {
                 default_end = params;
             }
-            Some("r") => showed.clear(),
+            Some("r") => engine.reset(),
             Some(x) => println!("not found command: ':{}'", x),
             None => {
                 match (
@@ -60,11 +60,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                         })
                         .next()
                         .and_then(|x| x.to_katakana().chars().next());
-                        let mut res =
-                            data.pick_and_sorted_and_limit(len, start, end, &mut showed, 3);
-                        if res.len() != 0 {
-                            res.reverse();
-                            println!("{}", res.join("\n"));
+                        let all_words = engine.find(start, end, len);
+                        let words = all_words.into_iter().take(3).collect::<Vec<_>>();
+                        for word in &words {
+                            engine.use_(word.clone());
+                        }
+                        if words.len() != 0 {
+                            println!("{}", words.into_iter().rev().collect::<Vec<_>>().join("\n"));
                         } else {
                             println!("not fount");
                         }
@@ -76,7 +78,6 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
-    Ok(())
 }
 
 fn run_init() -> Result<(), Box<dyn std::error::Error>> {

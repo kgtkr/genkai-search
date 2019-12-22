@@ -31,38 +31,12 @@ impl Dict {
         Ok(Dict(bincode::deserialize(buf)?))
     }
 
-    pub fn pick_and_sorted(
-        &self,
-        len: usize,
-        start: char,
-        end: Option<char>,
-        showed: &HashSet<String>,
-    ) -> Vec<String> {
-        let mut picked = self.0.get(&(start, len)).cloned().unwrap_or_else(Vec::new);
-        picked.sort_by_key(|x| {
-            (
-                showed.contains(x),
-                !end.clone()
-                    .map(|end| x.trim_end_matches("ー").chars().last() == Some(end))
-                    .unwrap_or(true),
-            )
-        });
-        picked
-    }
-
-    pub fn pick_and_sorted_and_limit(
-        &self,
-        len: usize,
-        start: char,
-        end: Option<char>,
-        showed: &mut HashSet<String>,
-        limit: usize,
-    ) -> Vec<String> {
-        let res = self.pick_and_sorted(len, start, end, showed);
-        let res = res.into_iter().take(limit).collect::<Vec<_>>();
-        for x in &res {
-            showed.insert(x.clone());
-        }
-        res
+    pub fn find(&self, start: char, len: usize) -> HashSet<String> {
+        self.0
+            .get(&(start, len))
+            .cloned()
+            .unwrap_or_else(Vec::new)
+            .into_iter()
+            .collect::<HashSet<_>>()
     }
 }
