@@ -13,6 +13,7 @@ pub enum InputButton {
     W,
     Line,
     Enter,
+    Send,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -120,5 +121,6 @@ pub fn string_to_keys(s: &String) -> Option<Vec<(InputButton, Dire)>> {
         }
         keys.push((InputButton::Enter, Dire::C));
     }
+    keys.push((InputButton::Send, Dire::C));
     Some(keys)
 }

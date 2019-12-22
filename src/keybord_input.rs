@@ -31,6 +31,7 @@ fn key_to_point(key: &InputButton) -> (i32, i32) {
         InputButton::W => (540, 2000),
         InputButton::Line => (760, 2000),
         InputButton::Enter => (110, 1560),
+        InputButton::Send => (840, 1360),
     }
 }
 
