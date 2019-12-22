@@ -17,31 +17,18 @@ impl KeyboardManager {
         )
     }
 
-    fn swipe(&mut self, list: &Vec<(i32, i32, i32, i32)>) {
+    fn swipe(&mut self, (x1, y1, x2, y2): &(i32, i32, i32, i32)) {
         let stdin = self.0.stdin.as_mut().unwrap();
         stdin
-            .write(
-                format!(
-                    "{}\n",
-                    list.iter()
-                        .map(|(x1, y1, x2, y2)| format!("input swipe {} {} {} {}", x1, y1, x2, y2))
-                        .collect::<Vec<_>>()
-                        .join("&&")
-                )
-                .as_bytes(),
-            )
+            .write(format!("input swipe {} {} {} {}\n", x1, y1, x2, y2).as_bytes())
             .unwrap();
         stdin.flush().unwrap();
     }
 
     pub fn input_string(&mut self, s: &String) {
-        self.swipe(
-            &string_to_keys(s)
-                .unwrap()
-                .into_iter()
-                .map(|key| key_to_swipe(&key))
-                .collect::<Vec<_>>(),
-        );
+        for key in string_to_keys(s).unwrap() {
+            self.swipe(&key_to_swipe(&key));
+        }
     }
 }
 
