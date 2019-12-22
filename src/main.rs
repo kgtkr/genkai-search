@@ -48,7 +48,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut buf = Vec::new();
         BufReader::new(File::open("dict.bin")?).read_to_end(&mut buf)?;
         let data = Dict::load(&buf)?;
-        let mut showd = HashSet::new();
+        let mut showed = HashSet::new();
         let mut default_end = Vec::new();
         let mut count = 0;
         loop {
@@ -61,7 +61,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Some("d") => {
                     default_end = params;
                 }
-                Some("r") => showd.clear(),
+                Some("r") => showed.clear(),
                 Some(x) => println!("not found command: ':{}'", x),
                 None => {
                     match (
@@ -84,7 +84,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .next()
                             .and_then(|x| x.to_katakana().chars().next());
                             let mut res =
-                                data.pick_and_sorted_and_limit(len, start, end, &mut showd, 3);
+                                data.pick_and_sorted_and_limit(len, start, end, &mut showed, 3);
                             if res.len() != 0 {
                                 res.reverse();
                                 println!("{}", res.join("\n"));

@@ -36,12 +36,12 @@ impl Dict {
         len: usize,
         start: char,
         end: Option<char>,
-        showd: &HashSet<String>,
+        showed: &HashSet<String>,
     ) -> Vec<String> {
         let mut picked = self.0.get(&(start, len)).cloned().unwrap_or_else(Vec::new);
         picked.sort_by_key(|x| {
             (
-                showd.contains(x),
+                showed.contains(x),
                 !end.clone()
                     .map(|end| x.trim_end_matches("ー").chars().last() == Some(end))
                     .unwrap_or(true),
@@ -55,13 +55,13 @@ impl Dict {
         len: usize,
         start: char,
         end: Option<char>,
-        showd: &mut HashSet<String>,
+        showed: &mut HashSet<String>,
         limit: usize,
     ) -> Vec<String> {
-        let res = self.pick_and_sorted(len, start, end, showd);
+        let res = self.pick_and_sorted(len, start, end, showed);
         let res = res.into_iter().take(limit).collect::<Vec<_>>();
         for x in &res {
-            showd.insert(x.clone());
+            showed.insert(x.clone());
         }
         res
     }
