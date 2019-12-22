@@ -1,15 +1,15 @@
 use super::keybord::{string_to_keys, Dire, InputButton};
 use std::process::Command;
 
-fn swipe(x1: i32, y1: i32, x2: i32, y2: i32) {
+fn swipe(list: &Vec<(i32, i32, i32, i32)>) {
     Command::new("adb")
         .arg("shell")
-        .arg("input")
-        .arg("swipe")
-        .arg(x1.to_string())
-        .arg(y1.to_string())
-        .arg(x2.to_string())
-        .arg(y2.to_string())
+        .arg(
+            list.iter()
+                .map(|(x1, y1, x2, y2)| format!("input swipe {} {} {} {}", x1, y1, x2, y2))
+                .collect::<Vec<_>>()
+                .join("&&"),
+        )
         .output()
         .unwrap();
 }
@@ -35,7 +35,7 @@ fn key_to_point(key: &InputButton) -> (i32, i32) {
     }
 }
 
-fn run_key((button, dire): &(InputButton, Dire)) {
+fn key_to_swipe((button, dire): &(InputButton, Dire)) -> (i32, i32, i32, i32) {
     let (x1, y1) = key_to_point(button);
     let (dx, dy) = match dire {
         Dire::C => (0, 0),
@@ -44,11 +44,15 @@ fn run_key((button, dire): &(InputButton, Dire)) {
         Dire::R => (swipe_width, 0),
         Dire::D => (0, swipe_width),
     };
-    swipe(x1, y1, x1 + dx, y1 + dy);
+    (x1, y1, x1 + dx, y1 + dy)
 }
 
 pub fn input_string(s: &String) {
-    for key in string_to_keys(s).unwrap() {
-        run_key(&key);
-    }
+    swipe(
+        &string_to_keys(s)
+            .unwrap()
+            .into_iter()
+            .map(|key| key_to_swipe(&key))
+            .collect::<Vec<_>>(),
+    );
 }
