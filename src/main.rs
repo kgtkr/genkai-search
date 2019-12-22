@@ -29,11 +29,11 @@ impl Dict {
         )
     }
 
-    fn dump(&self) -> Result<Vec<u8>, Box<std::error::Error>> {
+    fn dump(&self) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         Ok(bincode::serialize(&self.0)?)
     }
 
-    fn load(buf: &Vec<u8>) -> Result<Dict, Box<std::error::Error>> {
+    fn load(buf: &Vec<u8>) -> Result<Dict, Box<dyn std::error::Error>> {
         Ok(Dict(bincode::deserialize(buf)?))
     }
 
@@ -65,7 +65,7 @@ impl Dict {
         limit: usize,
     ) -> Vec<String> {
         let res = self.pick_and_sorted(len, start, end, showd);
-        let mut res = res.into_iter().take(limit).collect::<Vec<_>>();
+        let res = res.into_iter().take(limit).collect::<Vec<_>>();
         for x in &res {
             showd.insert(x.clone());
         }
@@ -99,7 +99,7 @@ fn parse_input(line: String) -> (Option<String>, Vec<String>) {
     (cmd.map(|x| x.chars().skip(1).collect()), params)
 }
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     if env::args().nth(1) == Some("init".to_string()) {
         BufWriter::new(File::create("dict.bin")?).write_all(
             &Dict::from_csv(
