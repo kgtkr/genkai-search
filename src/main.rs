@@ -1,6 +1,5 @@
 use genkai_search::{parse_command, AnyError, Dict, Engine};
 
-use std::collections::HashSet;
 use std::env;
 
 use romaji::RomajiExt;
@@ -12,6 +11,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     match &env::args()
         .collect::<Vec<_>>()
         .iter()
+        .skip(1)
         .map(|s| s.as_ref())
         .collect::<Vec<_>>()[..]
     {
@@ -60,7 +60,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                         })
                         .next()
                         .and_then(|x| x.to_katakana().chars().next());
-                        let all_words = engine.find(start, end, len);
+                        let all_words = engine.find(start, end, len, len >= 8);
                         let words = all_words.into_iter().take(3).collect::<Vec<_>>();
                         for word in &words {
                             engine.use_(word.clone());

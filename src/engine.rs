@@ -18,8 +18,12 @@ impl<'a> Engine<'a> {
         self.used.clear();
     }
 
-    pub fn find(&self, start: char, end: Option<char>, len: usize) -> Vec<String> {
-        let mut list = self.dict.find(start, len).into_iter().collect::<Vec<_>>();
+    pub fn find(&self, start: char, end: Option<char>, len: usize, gt: bool) -> Vec<String> {
+        let mut list = self
+            .dict
+            .find(start, len, gt)
+            .into_iter()
+            .collect::<Vec<_>>();
         list.sort_by_key(|x| {
             (
                 self.used.contains(x),
