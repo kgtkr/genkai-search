@@ -20,7 +20,7 @@ impl KeyboardManager {
     fn swipe(&mut self, (x1, y1, x2, y2): &(i32, i32, i32, i32)) {
         let stdin = self.0.stdin.as_mut().unwrap();
         stdin
-            .write(format!("input swipe {} {} {} {}\n", x1, y1, x2, y2).as_bytes())
+            .write(format!("input swipe {} {} {} {} 50\n", x1, y1, x2, y2).as_bytes())
             .unwrap();
         stdin.flush().unwrap();
     }
