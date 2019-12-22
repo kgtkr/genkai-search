@@ -8,7 +8,7 @@ use romaji::RomajiExt;
 use std::fs::File;
 use std::io::{stdin, BufRead, BufReader, BufWriter, Read, Write};
 
-fn tokenlize_input(line: String) -> Vec<String> {
+fn tokenize_input(line: String) -> Vec<String> {
     line.trim_end_matches("\n")
         .split(' ')
         .map(|x| x.to_string())
@@ -29,7 +29,7 @@ fn satisfy<T>(items: Vec<T>, f: impl FnOnce(&T) -> bool) -> (Option<T>, Vec<T>) 
 }
 
 fn parse_input(line: String) -> (Option<String>, Vec<String>) {
-    let tokens = tokenlize_input(line);
+    let tokens = tokenize_input(line);
     let (cmd, params) = satisfy(tokens, |x| x.chars().next() == Some(':'));
     (cmd.map(|x| x.chars().skip(1).collect()), params)
 }
