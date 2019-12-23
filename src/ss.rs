@@ -80,14 +80,21 @@ impl SSManager {
         }
     }
 
-    pub fn cur(&self) -> (char, usize) {
+    pub fn cur(&self) -> Option<(char, usize)> {
         let mut ss = get_ss();
-        let ss_num = crop_num(&mut ss);
-        let ss_char = crop_char(&mut ss);
-        (
-            min_image(&ss_char, &self.chars),
-            min_image(&ss_num, &self.nums),
-        )
+        let self_color = ss.get_pixel(10, 500);
+        if color_diff(&self_color, &Rgba([191, 7, 7, 255]))
+            < color_diff(&self_color, &Rgba([0, 0, 0, 255]))
+        {
+            let ss_num = crop_num(&mut ss);
+            let ss_char = crop_char(&mut ss);
+            Some((
+                min_image(&ss_char, &self.chars),
+                min_image(&ss_num, &self.nums),
+            ))
+        } else {
+            None
+        }
     }
 }
 

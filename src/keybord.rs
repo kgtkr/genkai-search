@@ -33,6 +33,7 @@ fn char_to_keys(c: char) -> Option<Vec<(InputButton, Dire)>> {
         'イ' => vec![(InputButton::A, Dire::L)],
         'ゥ' => vec![(InputButton::A, Dire::U), (InputButton::Point, Dire::C)],
         'ウ' => vec![(InputButton::A, Dire::U)],
+        'ヴ' => vec![(InputButton::A, Dire::U), (InputButton::Point, Dire::C)],
         'ェ' => vec![(InputButton::A, Dire::R), (InputButton::Point, Dire::C)],
         'エ' => vec![(InputButton::A, Dire::R)],
         'ォ' => vec![(InputButton::A, Dire::D), (InputButton::Point, Dire::C)],
