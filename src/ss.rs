@@ -99,10 +99,11 @@ impl SSManager {
 
     pub fn cur(&self) -> SSStatus {
         let mut ss = get_ss();
-        let self_color = ss.get_pixel(10, 500);
-        if color_diff(&self_color, &Rgba([191, 7, 7, 255]))
-            < color_diff(&self_color, &Rgba([0, 0, 0, 255]))
-        {
+        if all_color(
+            &ss.crop(150, 1260, 560, 25),
+            &Rgba([228, 240, 238, 255]),
+            5.0,
+        ) {
             if !all_color(
                 &ss.crop(150, 1310, 560, 90),
                 &Rgba([233, 254, 255, 255]),
