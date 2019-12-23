@@ -8,7 +8,7 @@ fn swipe_all(list: &Vec<(i32, i32, i32, i32)>) {
         .arg("shell")
         .arg(
             list.iter()
-                .map(|(x1, y1, x2, y2)| format!("input swipe {} {} {} {} 50", x1, y1, x2, y2))
+                .map(|(x1, y1, x2, y2)| format!("input swipe {} {} {} {} 100", x1, y1, x2, y2))
                 .collect::<Vec<_>>()
                 .join("&&"),
         )

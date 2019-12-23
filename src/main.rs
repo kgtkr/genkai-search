@@ -29,8 +29,52 @@ fn run_learn() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn run_auto() -> Result<(), Box<dyn std::error::Error>> {
-    ss::foo();
-    Ok(())
+    let mut buf = Vec::new();
+    BufReader::new(File::open("dict.bin")?).read_to_end(&mut buf)?;
+    let dict = Dict::load(&buf)?;
+    let mut engine = Engine::new(&dict);
+    let mut default_end = Vec::new();
+    let mut count = 0;
+    let ssm = ss::SSManager::init();
+    loop {
+        count += 1;
+        println!("input:");
+        let mut input = String::new();
+        stdin().read_line(&mut input)?;
+        let (cmd, params) = parse_command(input);
+        match cmd.as_ref().map(String::as_str) {
+            Some("d") => {
+                default_end = params;
+            }
+            Some("r") => engine.reset(),
+            Some(x) => println!("not found command: ':{}'", x),
+            None => {
+                let end = vec![
+                    params.get(2).cloned().into_iter().collect::<Vec<_>>(),
+                    default_end.clone(),
+                ]
+                .into_iter()
+                .filter_map(|x| {
+                    if x.len() != 0 {
+                        x.get(count % x.len()).cloned()
+                    } else {
+                        None
+                    }
+                })
+                .next()
+                .and_then(|x| x.to_katakana().chars().next());
+                let (start, len) = ssm.cur();
+                let all_words = engine.find(start, end, len, len >= 8);
+                if let Some(word) = all_words.first() {
+                    engine.use_(word.clone());
+                    println!("{}", word);
+                    input_string(&word);
+                } else {
+                    println!("not fount");
+                }
+            }
+        }
+    }
 }
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
@@ -80,7 +124,6 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                         if words.len() != 0 {
                             let input = words[0].clone();
                             println!("{}", words.into_iter().rev().collect::<Vec<_>>().join("\n"));
-                            input_string(&input);
                         } else {
                             println!("not fount");
                         }
