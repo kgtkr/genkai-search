@@ -1,4 +1,4 @@
-use genkai_search::{parse_command, AnyError, Dict, Engine, KeyboardManager};
+use genkai_search::{parse_command, ss, AnyError, Dict, Engine, KeyboardManager};
 
 use std::env;
 
@@ -16,9 +16,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect::<Vec<_>>()[..]
     {
         &[] => run(),
+        &["auto"] => run_auto(),
+        &["learn"] => run_learn(),
         &["init"] => run_init(),
         _ => Err(Box::new(AnyError::new("".to_string()))),
     }
+}
+
+fn run_learn() -> Result<(), Box<dyn std::error::Error>> {
+    ss::learn();
+    Ok(())
+}
+
+fn run_auto() -> Result<(), Box<dyn std::error::Error>> {
+    ss::foo();
+    Ok(())
 }
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {

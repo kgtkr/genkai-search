@@ -4,6 +4,7 @@ mod dict;
 mod engine;
 mod keybord;
 mod keybord_input;
+pub mod ss;
 
 pub use any_error::AnyError;
 pub use command_parser::parse_command;

@@ -2,3 +2,5 @@
 **/*.rs.bk
 dict.csv
 dict.bin
+/tmp/**
+!/tmp/.gitkeep
