@@ -37,6 +37,7 @@ impl<'a> Engine<'a> {
                 self.used.contains(x),
                 !end.map(|end| x.trim_end_matches("ー").chars().last() == Some(end))
                     .unwrap_or(true),
+                x.len(),
             )
         });
         list
