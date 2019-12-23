@@ -21,6 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &["auto"] => run_auto(),
         &["learn"] => run_learn(),
         &["init"] => run_init(),
+        &["first-count"] => run_first_count(),
         _ => Err(Box::new(AnyError::new("".to_string()))),
     }
 }
@@ -151,5 +152,27 @@ fn run_init() -> Result<(), Box<dyn std::error::Error>> {
         .dump()?,
     )?;
 
+    Ok(())
+}
+
+fn run_first_count() -> Result<(), Box<dyn std::error::Error>> {
+    use std::collections::{HashMap, HashSet};
+
+    let mut list = BufReader::new(File::open("dict.csv")?)
+        .lines()
+        .filter_map(|x| x.ok())
+        .filter_map(|x| x.split(',').nth(11).map(|x| x.to_string()))
+        .filter(|x| x.chars().last() != Some('ン'))
+        .collect::<HashSet<_>>()
+        .into_iter()
+        .filter_map(|x| x.chars().next().clone())
+        .fold(HashMap::new(), |mut dict, x| {
+            *dict.entry(x).or_insert_with(|| 0) += 1;
+            dict
+        })
+        .into_iter()
+        .collect::<Vec<_>>();
+    list.sort_by_key(|&(_, c)| c);
+    println!("{:?}", list);
     Ok(())
 }
