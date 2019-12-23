@@ -1,4 +1,4 @@
-use genkai_search::{parse_command, ss, AnyError, Dict, Engine, KeyboardManager};
+use genkai_search::{input_string, parse_command, ss, AnyError, Dict, Engine};
 
 use std::env;
 
@@ -38,7 +38,6 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     BufReader::new(File::open("dict.bin")?).read_to_end(&mut buf)?;
     let dict = Dict::load(&buf)?;
     let mut engine = Engine::new(&dict);
-    let mut keybord = KeyboardManager::start();
     let mut default_end = Vec::new();
     let mut count = 0;
     loop {
@@ -81,7 +80,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                         if words.len() != 0 {
                             let input = words[0].clone();
                             println!("{}", words.into_iter().rev().collect::<Vec<_>>().join("\n"));
-                            keybord.input_string(&input);
+                            input_string(&input);
                         } else {
                             println!("not fount");
                         }

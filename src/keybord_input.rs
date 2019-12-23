@@ -1,35 +1,29 @@
 use super::keybord::{string_to_keys, Dire, InputButton};
-use std::io::Write;
+use std::io::{BufRead, BufReader, Read, Write};
 use std::process::{Child, Command, Stdio};
 
-pub struct KeyboardManager(Child);
-
-impl KeyboardManager {
-    pub fn start() -> KeyboardManager {
-        KeyboardManager(
-            Command::new("adb")
-                .arg("shell")
-                .stdout(Stdio::null())
-                .stdin(Stdio::piped())
-                .stderr(Stdio::null())
-                .spawn()
-                .unwrap(),
+fn swipe_all(list: &Vec<(i32, i32, i32, i32)>) {
+    // (x1, y1, x2, y2)
+    Command::new("adb")
+        .arg("shell")
+        .arg(
+            list.iter()
+                .map(|(x1, y1, x2, y2)| format!("input swipe {} {} {} {} 50", x1, y1, x2, y2))
+                .collect::<Vec<_>>()
+                .join("&&"),
         )
-    }
+        .output()
+        .unwrap();
+}
 
-    fn swipe(&mut self, (x1, y1, x2, y2): &(i32, i32, i32, i32)) {
-        let stdin = self.0.stdin.as_mut().unwrap();
-        stdin
-            .write(format!("input swipe {} {} {} {} 50\n", x1, y1, x2, y2).as_bytes())
-            .unwrap();
-        stdin.flush().unwrap();
-    }
-
-    pub fn input_string(&mut self, s: &String) {
-        for key in string_to_keys(s).unwrap() {
-            self.swipe(&key_to_swipe(&key));
-        }
-    }
+pub fn input_string(s: &String) {
+    swipe_all(
+        &string_to_keys(s)
+            .unwrap()
+            .iter()
+            .map(|key| key_to_swipe(key))
+            .collect::<Vec<_>>(),
+    )
 }
 
 const swipe_width: i32 = 120;
