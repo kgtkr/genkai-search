@@ -122,7 +122,6 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                             engine.use_(word.clone());
                         }
                         if words.len() != 0 {
-                            let input = words[0].clone();
                             println!("{}", words.into_iter().rev().collect::<Vec<_>>().join("\n"));
                         } else {
                             println!("not fount");
