@@ -138,12 +138,19 @@ fn char_to_keys(c: char) -> Option<Vec<(InputButton, Dire)>> {
 }
 
 pub fn string_to_keys(s: &String) -> Option<Vec<(InputButton, Dire)>> {
+    let mut last = None;
     let mut keys = Vec::new();
     for c in s.chars() {
-        for key in char_to_keys(c)? {
+        let ckeys = char_to_keys(c)?;
+        if let Some(last) = &last {
+            if &ckeys.first().unwrap().0 == last {
+                keys.push((InputButton::Enter, Dire::C));
+            }
+        }
+        for key in ckeys {
+            last = Some(key.0.clone());
             keys.push(key);
         }
-        keys.push((InputButton::Enter, Dire::C));
     }
     keys.push((InputButton::Send, Dire::C));
     Some(keys)
