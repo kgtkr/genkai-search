@@ -1,6 +1,6 @@
 use genkai_search::{input_string, parse_command, ss, AnyError, Dict, Engine};
-
 use std::env;
+use std::{thread, time};
 
 use romaji::RomajiExt;
 
@@ -56,6 +56,7 @@ fn run_auto() -> Result<(), Box<dyn std::error::Error>> {
                     engine.use_(word.clone());
                     println!("{}", word);
                     input_string(&word);
+                    thread::sleep(time::Duration::from_secs(1));
                 } else {
                     println!("not fount");
                 }
