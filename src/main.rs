@@ -58,7 +58,7 @@ fn run_auto() -> Result<(), Box<dyn std::error::Error>> {
                     let all_words = engine.find(start, end, len, len >= 8);
                     if let Some(word) = all_words.first() {
                         engine.use_(word.clone());
-                        last_word_len = word.len();
+                        last_word_len = word.chars().count();
                         println!("{}", word);
                         input_string(&word);
                         thread::sleep(time::Duration::from_secs(1));
