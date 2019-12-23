@@ -43,6 +43,17 @@ fn image_diff(image1: &DynamicImage, image2: &DynamicImage) -> f64 {
     sum
 }
 
+fn all_color(image: &DynamicImage, color: &Rgba<u8>, threshold: f64) -> bool {
+    for x in 0..image.width() {
+        for y in 0..image.height() {
+            if color_diff(&image.get_pixel(x, y), color) > threshold {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 fn read_images(dir: String) -> Vec<(String, DynamicImage)> {
     read_dir(dir)
         .unwrap()
@@ -66,6 +77,12 @@ pub struct SSManager {
     nums: Vec<(usize, DynamicImage)>,
 }
 
+pub enum SSStatus {
+    My(char, usize),
+    MyInput,
+    You,
+}
+
 impl SSManager {
     pub fn init() -> SSManager {
         SSManager {
@@ -80,20 +97,28 @@ impl SSManager {
         }
     }
 
-    pub fn cur(&self) -> Option<(char, usize)> {
+    pub fn cur(&self) -> SSStatus {
         let mut ss = get_ss();
         let self_color = ss.get_pixel(10, 500);
         if color_diff(&self_color, &Rgba([191, 7, 7, 255]))
             < color_diff(&self_color, &Rgba([0, 0, 0, 255]))
         {
-            let ss_num = crop_num(&mut ss);
-            let ss_char = crop_char(&mut ss);
-            Some((
-                min_image(&ss_char, &self.chars),
-                min_image(&ss_num, &self.nums),
-            ))
+            if !all_color(
+                &ss.crop(150, 1310, 560, 90),
+                &Rgba([233, 254, 255, 255]),
+                5.0,
+            ) {
+                SSStatus::MyInput
+            } else {
+                let ss_num = crop_num(&mut ss);
+                let ss_char = crop_char(&mut ss);
+                SSStatus::My(
+                    min_image(&ss_char, &self.chars),
+                    min_image(&ss_num, &self.nums),
+                )
+            }
         } else {
-            None
+            SSStatus::You
         }
     }
 }
@@ -125,25 +150,4 @@ pub fn learn() {
     crop_num(&mut image)
         .save(format!("learn-num/{}.png", now))
         .unwrap();
-}
-
-pub fn hoge() -> String {
-    let ss = Command::new("adb")
-        .arg("shell")
-        .arg("screencap")
-        .arg("-p")
-        .output()
-        .unwrap()
-        .stdout;
-    BufWriter::new(File::create("tmp/screen.png").unwrap())
-        .write_all(&ss)
-        .unwrap();
-    Command::new("tesseract")
-        .arg("-l")
-        .arg("jpn")
-        .arg("tmp/screen.png")
-        .arg("tmp/output")
-        .output()
-        .unwrap();
-    read_to_string("tmp/output.txt").unwrap()
 }

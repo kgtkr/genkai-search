@@ -14,6 +14,7 @@ pub enum InputButton {
     Line,
     Enter,
     Send,
+    Delete,
 }
 
 #[derive(Clone, PartialEq, Debug)]

@@ -16,14 +16,12 @@ fn swipe_all(list: &Vec<(i32, i32, i32, i32)>) {
         .unwrap();
 }
 
+pub fn input_keys(keys: &Vec<(InputButton, Dire)>) {
+    swipe_all(&keys.iter().map(|key| key_to_swipe(key)).collect::<Vec<_>>())
+}
+
 pub fn input_string(s: &String) {
-    swipe_all(
-        &string_to_keys(s)
-            .unwrap()
-            .iter()
-            .map(|key| key_to_swipe(key))
-            .collect::<Vec<_>>(),
-    )
+    input_keys(&string_to_keys(s).unwrap());
 }
 
 const swipe_width: i32 = 120;
@@ -44,6 +42,7 @@ fn key_to_point(key: &InputButton) -> (i32, i32) {
         InputButton::Line => (760, 2000),
         InputButton::Enter => (110, 1560),
         InputButton::Send => (840, 1360),
+        InputButton::Delete => (960, 1550),
     }
 }
 

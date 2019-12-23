@@ -1,4 +1,6 @@
-use genkai_search::{input_string, parse_command, ss, AnyError, Dict, Engine};
+use genkai_search::{
+    input_keys, input_string, parse_command, ss, AnyError, Dict, Dire, Engine, InputButton,
+};
 use std::env;
 use std::{thread, time};
 
@@ -35,6 +37,7 @@ fn run_auto() -> Result<(), Box<dyn std::error::Error>> {
     let mut engine = Engine::new(&dict);
     let mut count = 0;
     let ssm = ss::SSManager::init();
+    let mut last_word_len = 8;
     println!("input:");
     let mut input = String::new();
     stdin().read_line(&mut input)?;
@@ -42,24 +45,36 @@ fn run_auto() -> Result<(), Box<dyn std::error::Error>> {
     if let None = cmd {
         let ends = params;
         loop {
-            if let Some((start, len)) = ssm.cur() {
-                count += 1;
-                let end = if ends.len() != 0 {
-                    ends.get(count % ends.len())
-                        .cloned()
-                        .and_then(|x| x.to_katakana().chars().next())
-                } else {
-                    None
-                };
-                let all_words = engine.find(start, end, len, len >= 8);
-                if let Some(word) = all_words.first() {
-                    engine.use_(word.clone());
-                    println!("{}", word);
-                    input_string(&word);
-                    thread::sleep(time::Duration::from_secs(1));
-                } else {
-                    println!("not fount");
+            match ssm.cur() {
+                ss::SSStatus::My(start, len) => {
+                    count += 1;
+                    let end = if ends.len() != 0 {
+                        ends.get(count % ends.len())
+                            .cloned()
+                            .and_then(|x| x.to_katakana().chars().next())
+                    } else {
+                        None
+                    };
+                    let all_words = engine.find(start, end, len, len >= 8);
+                    if let Some(word) = all_words.first() {
+                        engine.use_(word.clone());
+                        last_word_len = word.len();
+                        println!("{}", word);
+                        input_string(&word);
+                        thread::sleep(time::Duration::from_secs(1));
+                    } else {
+                        println!("not fount");
+                    }
                 }
+                ss::SSStatus::MyInput => {
+                    println!("delete {}", last_word_len);
+                    input_keys(
+                        &std::iter::repeat((InputButton::Delete, Dire::C))
+                            .take(last_word_len)
+                            .collect::<Vec<_>>(),
+                    )
+                }
+                ss::SSStatus::You => {}
             }
         }
     } else {
